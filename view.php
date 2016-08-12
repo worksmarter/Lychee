@@ -25,16 +25,9 @@
 				# Load required files
 				require(__DIR__ . '/php/define.php');
 				require(__DIR__ . '/php/autoload.php');
-				require(__DIR__ . '/php/modules/misc.php');
-				require(LYCHEE_CONFIG_FILE);
+				require(__DIR__ . '/php/helpers/getGraphHeader.php');
 
-				# Define the table prefix
-				if (!isset($dbTablePrefix)) $dbTablePrefix = '';
-				defineTablePrefix($dbTablePrefix);
-
-				$database = Database::connect($dbHost, $dbUser, $dbPassword, $dbName);
-
-				echo getGraphHeader($database, $_GET['p']);
+				echo getGraphHeader($_GET['p']);
 
 			}
 
@@ -55,11 +48,11 @@
 
 			<a class="header__title"></a>
 
+			<a class="button button--share" id="button_share" title="Share Photo">
+				<svg class="iconic"><use xlink:href="#share"></use></svg>
+			</a>
 			<a class="button button--info" id="button_info" title="About Photo">
 				<svg class="iconic"><use xlink:href="#info"></use></svg>
-			</a>
-			<a class="button" id="button_direct" title="Direct Link">
-				<svg class="iconic"><use xlink:href="#link-intact"></use></svg>
 			</a>
 
 		</div>

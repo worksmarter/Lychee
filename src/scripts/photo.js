@@ -24,6 +24,21 @@ photo.getID = function() {
 
 photo.load = function(photoID, albumID) {
 
+	const checkContent = function() {
+		if (album.json!=null) photo.load(photoID, albumID)
+		else                  setTimeout(checkContent, 100)
+	}
+
+	const checkPasswd = function() {
+		if (password.value!=='') photo.load(photoID, albumID)
+		else                     setTimeout(checkPasswd, 200)
+	}
+
+	if (album.json==null) {
+		checkContent()
+		return false
+	}
+
 	let params = {
 		photoID,
 		albumID,
@@ -32,14 +47,9 @@ photo.load = function(photoID, albumID) {
 
 	api.post('Photo::get', params, function(data) {
 
-		const checkPasswd = function() {
-			if (password.value!=='') photo.load(photoID, albumID)
-			else                     setTimeout(checkPasswd, 250)
-		}
-
 		if (data==='Warning: Photo private!') {
 			lychee.content.show()
-			lychee.goto('')
+			lychee.goto()
 			return false
 		}
 
@@ -71,8 +81,8 @@ photo.preloadNext = function(photoID) {
 	    album.json.content[photoID] &&
 	    album.json.content[photoID].nextPhoto!='') {
 
-		let nextPhoto = album.json.content[photoID].nextPhoto,
-		    url       = album.json.content[nextPhoto].url
+		let nextPhoto = album.json.content[photoID].nextPhoto
+		let url       = album.json.content[nextPhoto].url
 
 		$('head [data-prefetch]').remove()
 		$('head').append(`<link data-prefetch rel="prefetch" href="${ url }">`)
@@ -152,7 +162,7 @@ photo.next = function(animate) {
 photo.duplicate = function(photoIDs) {
 
 	if (!photoIDs) return false
-	if (photoIDs instanceof Array===false) photoIDs = [photoIDs]
+	if (photoIDs instanceof Array===false) photoIDs = [ photoIDs ]
 
 	albums.refresh()
 
@@ -171,13 +181,13 @@ photo.duplicate = function(photoIDs) {
 
 photo.delete = function(photoIDs) {
 
-	let action     = {},
-	    cancel     = {},
-	    msg        = '',
-	    photoTitle = ''
+	let action     = {}
+	let cancel     = {}
+	let msg        = ''
+	let photoTitle = ''
 
 	if (!photoIDs) return false
-	if (photoIDs instanceof Array===false) photoIDs = [photoIDs]
+	if (photoIDs instanceof Array===false) photoIDs = [ photoIDs ]
 
 	if (photoIDs.length===1) {
 
@@ -192,8 +202,8 @@ photo.delete = function(photoIDs) {
 
 	action.fn = function() {
 
-		let nextPhoto,
-			previousPhoto
+		let nextPhoto = null
+		let previousPhoto = null
 
 		basicModal.close()
 
@@ -219,8 +229,8 @@ photo.delete = function(photoIDs) {
 
 		// Go to next photo if there is a next photo and
 		// next photo is not the current one. Show album otherwise.
-		if (visible.photo() && nextPhoto!=='' && nextPhoto!==photo.getID()) lychee.goto(album.getID() + '/' + nextPhoto)
-		else if (!visible.albums())                                         lychee.goto(album.getID())
+		if (visible.photo() && nextPhoto!=null && nextPhoto!==photo.getID()) lychee.goto(album.getID() + '/' + nextPhoto)
+		else if (!visible.albums())                                          lychee.goto(album.getID())
 
 		let params = {
 			photoIDs: photoIDs.join()
@@ -269,11 +279,11 @@ photo.delete = function(photoIDs) {
 
 photo.setTitle = function(photoIDs) {
 
-	let oldTitle = '',
-	    msg      = ''
+	let oldTitle = ''
+	let msg      = ''
 
 	if (!photoIDs) return false
-	if (photoIDs instanceof Array===false) photoIDs = [photoIDs]
+	if (photoIDs instanceof Array===false) photoIDs = [ photoIDs ]
 
 	if (photoIDs.length===1) {
 
@@ -300,8 +310,8 @@ photo.setTitle = function(photoIDs) {
 		})
 
 		let params = {
-			photoIDs: photoIDs.join(),
-			title: newTitle
+			photoIDs : photoIDs.join(),
+			title    : newTitle
 		}
 
 		api.post('Photo::setTitle', params, function(data) {
@@ -335,13 +345,11 @@ photo.setTitle = function(photoIDs) {
 
 photo.setAlbum = function(photoIDs, albumID) {
 
-	let nextPhoto,
-		previousPhoto
+	let nextPhoto = null
+	let previousPhoto = null
 
 	if (!photoIDs) return false
-	if (photoIDs instanceof Array===false) photoIDs = [photoIDs]
-
-	if (visible.photo) lychee.goto(album.getID())
+	if (photoIDs instanceof Array===false) photoIDs = [ photoIDs ]
 
 	photoIDs.forEach(function(id, index, array) {
 
@@ -362,6 +370,11 @@ photo.setAlbum = function(photoIDs, albumID) {
 	})
 
 	albums.refresh()
+
+	// Go to next photo if there is a next photo and
+	// next photo is not the current one. Show album otherwise.
+	if (visible.photo() && nextPhoto!=null && nextPhoto!==photo.getID()) lychee.goto(album.getID() + '/' + nextPhoto)
+	else if (!visible.albums())                                          lychee.goto(album.getID())
 
 	let params = {
 		photoIDs: photoIDs.join(),
@@ -416,7 +429,7 @@ photo.setPublic = function(photoID, e) {
 		}
 
 		basicModal.show({
-			body: "<p>This photo is located in a public album. To make this photo private or public, edit the visibility of the associated album.</p>",
+			body: '<p>This photo is located in a public album. To make this photo private or public, edit the visibility of the associated album.</p>',
 			buttons: {
 				action: {
 					title: 'Show Album',
@@ -500,11 +513,11 @@ photo.setDescription = function(photoID) {
 
 photo.editTags = function(photoIDs) {
 
-	let oldTags = '',
-	    msg     = ''
+	let oldTags = ''
+	let msg     = ''
 
 	if (!photoIDs) return false
-	if (photoIDs instanceof Array===false) photoIDs = [photoIDs]
+	if (photoIDs instanceof Array===false) photoIDs = [ photoIDs ]
 
 	// Get tags
 	if (visible.photo())                              oldTags = photo.json.tags
@@ -553,7 +566,7 @@ photo.editTags = function(photoIDs) {
 photo.setTags = function(photoIDs, tags) {
 
 	if (!photoIDs) return false
-	if (photoIDs instanceof Array===false) photoIDs = [photoIDs]
+	if (photoIDs instanceof Array===false) photoIDs = [ photoIDs ]
 
 	// Parse tags
 	tags = tags.replace(/(\ ,\ )|(\ ,)|(,\ )|(,{1,}\ {0,})|(,$|^,)/g, ',')
@@ -591,24 +604,23 @@ photo.deleteTag = function(photoID, index) {
 
 	// Save
 	photo.json.tags = tags.toString()
-	photo.setTags([photoID], photo.json.tags)
+	photo.setTags([ photoID ], photo.json.tags)
 
 }
 
 photo.share = function(photoID, service) {
 
-	let link = '',
-	    url  = photo.getViewLink(photoID)
+	let url  = photo.getViewLink(photoID)
 
 	switch (service) {
 		case 'twitter':
-			link = `https://twitter.com/share?url=${ encodeURI(url) }`
+			window.open(`https://twitter.com/share?url=${ encodeURI(url) }`)
 			break
 		case 'facebook':
-			link = `http://www.facebook.com/sharer.php?u=${ encodeURI(url) }&t=${ encodeURI(photo.json.title) }`
+			window.open(`http://www.facebook.com/sharer.php?u=${ encodeURI(url) }&t=${ encodeURI(photo.json.title) }`)
 			break
 		case 'mail':
-			link = `mailto:?subject=${ encodeURI(photo.json.title) }&body=${ encodeURI(url) }`
+			location.href = `mailto:?subject=${ encodeURI(photo.json.title) }&body=${ encodeURI(url) }`
 			break
 		case 'dropbox':
 			lychee.loadDropbox(function() {
@@ -616,19 +628,14 @@ photo.share = function(photoID, service) {
 				Dropbox.save(photo.getDirectLink(), filename)
 			})
 			break
-		default:
-			link = ''
-			break
 	}
-
-	if (link.length!=='') location.href = link
 
 }
 
 photo.getArchive = function(photoID) {
 
-	let link,
-	    url = `${ api.path }?function=Photo::getArchive&photoID=${ photoID }`
+	let link
+	let url = `${ api.path }?function=Photo::getArchive&photoID=${ photoID }`
 
 	if (location.href.indexOf('index.html')>0) link = location.href.replace(location.hash, '').replace('index.html', url)
 	else                                       link = location.href.replace(location.hash, '') + url

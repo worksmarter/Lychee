@@ -19,7 +19,7 @@
 		background: none;
 		border-bottom: none;
 
-		.header__error { background-color: rgba(10, 10, 10, .99); }
+		&.header--error { background-color: rgba(10, 10, 10, .99); }
 	}
 
 	// Toolbars -------------------------------------------------------------- //
@@ -94,6 +94,8 @@
 		&--star.active .iconic { fill: #f0ef77; }
 
 		&--eye.active .iconic { fill: #ff9737; }
+
+		&--share .iconic { height: 18px; }
 
 		&--info.active .iconic { fill: $colorBlue; }
 	}
